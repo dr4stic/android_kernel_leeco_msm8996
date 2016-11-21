@@ -1016,7 +1016,7 @@ static void mdss_mdp_cmd_lineptr_done(void *arg)
 	spin_unlock(&ctx->clk_lock);
 }
 
-static void mdss_mdp_cmd_intf_recovery(void *data, int event)
+static int mdss_mdp_cmd_intf_recovery(void *data, int event)
 {
 	struct mdss_mdp_cmd_ctx *ctx = data;
 	unsigned long flags;
@@ -1024,11 +1024,11 @@ static void mdss_mdp_cmd_intf_recovery(void *data, int event)
 
 	if (!data) {
 		pr_err("%s: invalid ctx\n", __func__);
-		return;
+		return  -EINVAL;
 	}
 
 	if (!ctx->ctl)
-		return;
+		return  -EINVAL;
 
 	/*
 	 * Currently, only intf_fifo_underflow is
@@ -1038,7 +1038,7 @@ static void mdss_mdp_cmd_intf_recovery(void *data, int event)
 	if (event != MDP_INTF_DSI_CMD_FIFO_UNDERFLOW) {
 		pr_warn("%s: unsupported recovery event:%d\n",
 					__func__, event);
-		return;
+		return -EPERM;
 	}
 
 	if (atomic_read(&ctx->koff_cnt)) {
@@ -1061,6 +1061,7 @@ static void mdss_mdp_cmd_intf_recovery(void *data, int event)
 	if (notify_frame_timeout)
 		mdss_mdp_ctl_notify(ctx->ctl, MDP_NOTIFY_FRAME_TIMEOUT);
 
+	return 0;
 }
 
 static void mdss_mdp_cmd_pingpong_done(void *arg)

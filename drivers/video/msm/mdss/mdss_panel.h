@@ -159,7 +159,7 @@ struct mdss_panel_cfg {
 #define MDP_INTF_DSI_VIDEO_FIFO_OVERFLOW	0x0002
 
 struct mdss_intf_recovery {
-	void (*fxn)(void *ctx, int event);
+	int (*fxn)(void *ctx, int event);
 	void *data;
 };
 

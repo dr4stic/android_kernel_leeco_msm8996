@@ -3767,7 +3767,7 @@ static ssize_t dynamic_fps_sysfs_wta_dfps(struct device *dev,
 		DFPS_IMMEDIATE_MULTI_UPDATE_MODE_CLK_HFP ||
 		pdata->panel_info.dfps_update ==
 		DFPS_IMMEDIATE_MULTI_MODE_HFP_CALC_CLK) {
-		if (sscanf(buf, "%d %d %d %d %d",
+		if (sscanf(buf, "%u %u %u %u %u",
 		    &data.hfp, &data.hbp, &data.hpw,
 		    &data.clk_rate, &data.fps) != 5) {
 			pr_err("could not read input\n");
@@ -5113,16 +5113,20 @@ static int __mdss_overlay_src_split_sort(struct msm_fb_data_type *mfd,
 		__overlay_swap_func);
 
 	for (i = 0; i < num_ovs; i++) {
+		if (ovs[i].z_order >= MDSS_MDP_MAX_STAGE) {
+			pr_err("invalid stage:%u\n", ovs[i].z_order);
+			return -EINVAL;
+		}
 		if (ovs[i].dst_rect.x < left_lm_w) {
 			if (left_lm_zo_cnt[ovs[i].z_order] == 2) {
-				pr_err("more than 2 ov @ stage%d on left lm\n",
+				pr_err("more than 2 ov @ stage%u on left lm\n",
 					ovs[i].z_order);
 				return -EINVAL;
 			}
 			left_lm_zo_cnt[ovs[i].z_order]++;
 		} else {
 			if (right_lm_zo_cnt[ovs[i].z_order] == 2) {
-				pr_err("more than 2 ov @ stage%d on right lm\n",
+				pr_err("more than 2 ov @ stage%u on right lm\n",
 					ovs[i].z_order);
 				return -EINVAL;
 			}
@@ -5758,10 +5762,7 @@ static int mdss_mdp_overlay_off(struct msm_fb_data_type *mfd)
 	 * for retire fence to be updated.
 	 * As a last resort signal the timeline if vsync doesn't arrive.
 	 */
-	mutex_lock(&mfd->mdp_sync_pt_data.sync_mutex);
-	retire_cnt = mdp5_data->retire_cnt;
-	mutex_unlock(&mfd->mdp_sync_pt_data.sync_mutex);
-	if (retire_cnt) {
+	if (mdp5_data->retire_cnt) {
 		u32 fps = mdss_panel_get_framerate(mfd->panel_info,
 				FPS_RESOLUTION_HZ);
 		u32 vsync_time = 1000 / (fps ? : DEFAULT_FRAME_RATE);

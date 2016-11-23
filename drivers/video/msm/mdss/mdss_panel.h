@@ -282,6 +282,8 @@ struct lcd_panel_info {
 	/* Pad height */
 	u32 yres_pad;
 	u32 frame_rate;
+	u32 h_polarity;
+	u32 v_polarity;
 };
 
 
@@ -776,6 +778,7 @@ struct mdss_panel_data {
 
 struct mdss_panel_debugfs_info {
 	struct dentry *root;
+	struct dentry *parent;
 	struct mdss_panel_info panel_info;
 	u32 override_flag;
 	struct mdss_panel_debugfs_info *next;
